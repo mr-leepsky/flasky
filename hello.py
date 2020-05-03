@@ -26,7 +26,7 @@ class Role(db.Model):
     __tablename__ = "roles"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
-    users = db.relationship("User", backref="role")
+    users = db.relationship("User", backref="role", lazy="dynamic")
 
     def __repr__(self):
         return f"<Role {self.name}>"
@@ -51,12 +51,18 @@ class NameForm(FlaskForm):
 def index():
     form = NameForm()
     if form.validate_on_submit():
-        old_name = session.get("name")
-        if old_name and old_name != form.name.data:
-            flash("Looks like you've changed your name!")
+        user = User.query.filter_by(username=form.name.data).first()
+        session["known"] = True
+        if not user:
+            user = User(username=form.name.data)
+            db.session.add(user)
+            db.session.commit()
+            session["known"] = False
         session["name"] = form.name.data
         return redirect(url_for("index"))
-    return render_template("index.html", form=form, name=session.get("name"))
+    return render_template(
+        "index.html", form=form, name=session.get("name"), known=session.get("known")
+    )
 
 
 @app.errorhandler(404)
