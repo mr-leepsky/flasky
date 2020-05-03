@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Flask, redirect, render_template, session, url_for
+from flask import Flask, flash, redirect, render_template, session, url_for
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
 from flask_wtf import FlaskForm
@@ -24,6 +24,9 @@ app.config["SECRET_KEY"] = "44zgw&8v(M*L92{/,22)F"
 def index():
     form = NameForm()
     if form.validate_on_submit():
+        old_name = session.get("name")
+        if old_name and old_name != form.name.data:
+            flash("Looks like you've changed your name!")
         session["name"] = form.name.data
         return redirect(url_for("index"))
     return render_template(
