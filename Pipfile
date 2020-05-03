@@ -14,6 +14,7 @@ flask = "==1.1.2"
 flask-bootstrap = "==3.3.7.1"
 flask-moment = "==0.9.0"
 flask-wtf = "==0.14.3"
+flask-sqlalchemy = "==2.4.1"
 
 [requires]
 python_version = "3.8"
