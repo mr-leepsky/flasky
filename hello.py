@@ -1,5 +1,6 @@
 import os
 import os.path
+from threading import Thread
 
 from flask import Flask, redirect, render_template, session, url_for
 from flask_bootstrap import Bootstrap
@@ -60,6 +61,11 @@ class NameForm(FlaskForm):
     submit = SubmitField("Submit")
 
 
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 def send_mail(to, subject, template, **kwargs):
     msg = Message(
         app.config["FLASK_MAIL_SUBJECT_PREFIX"] + subject,
@@ -68,7 +74,9 @@ def send_mail(to, subject, template, **kwargs):
     )
     msg.body = render_template(template + ".txt", **kwargs)
     msg.html = render_template(template + ".html", **kwargs)
-    mail.send(msg)
+    thr = Thread(target=send_async_email, args=[app, msg])
+    thr.start()
+    return thr
 
 
 @app.route("/", methods=["GET", "POST"])
